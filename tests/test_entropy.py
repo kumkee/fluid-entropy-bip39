@@ -40,4 +40,5 @@ def test_entropy_warning_uses_runtime_threshold(tmp_path: Path):
     extraction = extract_entropy(video_path)
     report = validate_extraction(extraction, min_entropy_threshold=6.0)
 
+    assert not report.passed
     assert any("6.0" in warning for warning in report.warnings)

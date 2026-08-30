@@ -27,7 +27,8 @@ def test_official_256_bit_vectors_match_canonical_mnemonics():
 
 
 def test_format_mnemonic_supports_masking():
-    mnemonic = entropy_to_mnemonic("00000000000000000000000000000000")
+    mnemonic = entropy_to_mnemonic("00" * 32)
     formatted = format_mnemonic(mnemonic, numbered=True, masked=True)
+    assert len(formatted.splitlines()) == 24
     assert formatted.splitlines()[0].startswith("01. a")
     assert "about" not in formatted

@@ -7,6 +7,7 @@ import hashlib
 from pathlib import Path
 
 import cv2
+import numpy as np
 
 from fluid_entropy.utils import ROI, VideoMetadata, capture_metadata, ensure_video_path, seconds_to_frame, validate_roi
 
@@ -58,7 +59,8 @@ def _build_config(
     roi: ROI | None,
 ) -> ExtractionConfig:
     path = ensure_video_path(video_path)
-    if end_sec is not None and start_sec is not None and end_sec <= start_sec:
+    effective_start = 0.0 if start_sec is None else start_sec
+    if end_sec is not None and end_sec <= effective_start:
         raise ValueError("end_sec must be greater than start_sec")
     if roi is not None:
         validate_roi(roi)
@@ -102,7 +104,7 @@ def extract_entropy(
         previous = _apply_roi(previous, config.roi)
 
         hasher = hashlib.sha256()
-        histogram = [0] * 256
+        histogram = np.zeros(256, dtype=np.int64)
         bytes_processed = 0
         deltas_processed = 0
         frame_index = start_frame + 1
@@ -117,8 +119,7 @@ def extract_entropy(
             delta = cv2.absdiff(previous, current)
             delta_bytes = delta.tobytes()
             hasher.update(delta_bytes)
-            for value in delta_bytes:
-                histogram[value] += 1
+            histogram += np.bincount(delta.ravel(), minlength=256)
             bytes_processed += len(delta_bytes)
             deltas_processed += 1
             previous = current
@@ -131,7 +132,7 @@ def extract_entropy(
             config=config,
             metadata=metadata,
             digest=hasher.digest(),
-            byte_histogram=tuple(histogram),
+            byte_histogram=tuple(int(count) for count in histogram),
             bytes_processed=bytes_processed,
             deltas_processed=deltas_processed,
             start_frame=start_frame,
