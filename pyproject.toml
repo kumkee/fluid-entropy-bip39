@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fluid-entropy-bip39"
+version = "0.1.0"
+description = "Derive 24-word BIP-39 mnemonics from chaotic fluid and granular video recordings."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "kumkee" }]
+dependencies = [
+  "numpy>=2.2.6",
+  "opencv-python-headless>=4.12.0.88",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.4.1",
+]
+
+[project.scripts]
+fluid-entropy = "fluid_entropy.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+fluid_entropy = ["bip39_english.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
