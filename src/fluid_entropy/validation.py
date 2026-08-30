@@ -48,7 +48,7 @@ def validate_extraction(
 
     if min_entropy < min_entropy_threshold:
         warnings.append(
-            "Min-entropy estimate is below the default 4.0 bits/byte safety threshold; the video may be too static."
+            f"Min-entropy estimate is below the {min_entropy_threshold:.1f} bits/byte safety threshold; the video may be too static."
         )
     if extraction.deltas_processed < 8:
         warnings.append("Very short video window detected; collect more frames for stronger entropy confidence.")

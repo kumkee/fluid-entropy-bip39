@@ -81,13 +81,16 @@ def extract_entropy(
 
     try:
         metadata = capture_metadata(capture)
-        start_frame = seconds_to_frame(config.start_sec, metadata.fps) or 0
-        end_frame = seconds_to_frame(config.end_sec, metadata.fps) or metadata.frame_count
+        start_frame = seconds_to_frame(config.start_sec, metadata.fps)
+        end_frame = seconds_to_frame(config.end_sec, metadata.fps)
+        start_frame = 0 if start_frame is None else start_frame
+        if end_frame is None and metadata.frame_count:
+            end_frame = metadata.frame_count
         if metadata.frame_count and start_frame >= metadata.frame_count:
             raise ValueError("start_sec is beyond the end of the video")
-        if metadata.frame_count and end_frame > metadata.frame_count:
+        if metadata.frame_count and end_frame is not None and end_frame > metadata.frame_count:
             end_frame = metadata.frame_count
-        if end_frame and end_frame - start_frame < 2:
+        if end_frame is not None and end_frame - start_frame < 2:
             raise ValueError("Video window must contain at least two frames")
 
         if start_frame:
@@ -105,7 +108,7 @@ def extract_entropy(
         frame_index = start_frame + 1
 
         while True:
-            if end_frame and frame_index >= end_frame:
+            if end_frame is not None and frame_index >= end_frame:
                 break
             ok, current = capture.read()
             if not ok:

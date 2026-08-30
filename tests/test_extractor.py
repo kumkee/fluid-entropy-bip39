@@ -2,6 +2,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import pytest
 
 from fluid_entropy.extractor import extract_entropy
 
@@ -44,3 +45,11 @@ def test_extractor_supports_temporal_window_and_roi(tmp_path: Path):
     assert partial_result.deltas_processed < full_result.deltas_processed
     assert partial_result.bytes_processed < full_result.bytes_processed
     assert partial_result.digest != full_result.digest
+
+
+def test_extractor_rejects_zero_length_window(tmp_path: Path):
+    video_path = tmp_path / "invalid-window.avi"
+    _write_synthetic_video(video_path, frames=10, fps=10)
+
+    with pytest.raises(ValueError, match="end_sec must be greater than start_sec"):
+        extract_entropy(video_path, start_sec=0.0, end_sec=0.0)

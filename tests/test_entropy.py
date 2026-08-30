@@ -30,4 +30,14 @@ def test_static_video_fails_entropy_audit(tmp_path: Path):
 
     assert not report.passed
     assert report.min_entropy_per_byte == 0.0
-    assert any("static" in warning for warning in report.warnings)
+    assert any("too static" in warning for warning in report.warnings)
+
+
+def test_entropy_warning_uses_runtime_threshold(tmp_path: Path):
+    video_path = tmp_path / "threshold.avi"
+    _write_static_video(video_path)
+
+    extraction = extract_entropy(video_path)
+    report = validate_extraction(extraction, min_entropy_threshold=6.0)
+
+    assert any("6.0" in warning for warning in report.warnings)
